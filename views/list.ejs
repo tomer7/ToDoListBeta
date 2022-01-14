@@ -14,6 +14,7 @@
       <div class="icons">
         <div class="trashIcon">
           <form class="formTrashIcon" action="/" method="post">
+            <input type="hidden" name="whichList" value=<%= listTitle %>>
             <button class="colorTrashIcon" type="submit" name="trashClick" value="<%= newListItems[i] %>" >
                 <i class="fas fa-trash-alt"></i>
             </button>
@@ -21,6 +22,7 @@
         </div>
          <div class="hideIcon">
            <form class="formHideIcon" action="/" method="post">
+             <input type="hidden" name="whichList" value=<%= listTitle %>>
              <button class="colorHideIcon" type="submit" name="hideClick" value="<%= newListItems[i] %>">
                  <i class="far fa-eye-slash"></i>
              </button>
