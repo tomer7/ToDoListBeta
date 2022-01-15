@@ -1,0 +1,27 @@
+<%- include("header") -%>
+
+  <div class="box" id="heading">
+    <h1><%= listTitle %></h1>
+  </div>
+    <div class="box">
+      <% for (var i = 0; i < newListItems.length; i++) { %>
+      <div class="item fullLine">
+        <div class="item">
+          <input type="checkbox">
+          <p><%= newListItems[i].value %></p>
+        </div>
+        <div class="icons">
+          <div class="undoIcon">
+            <form class="formundoIcon" action="/hidden" method="post">
+              <input type="hidden" name="whichList" value=<%= listTitle %>>
+              <button class="colorUndoIcon" type="submit" name="undoClick" value="<%= newListItems[i].value %>" >
+                  <i class="fas fa-undo"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      <% } %>
+    </div>
+
+<%- include("footer") -%>

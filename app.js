@@ -39,7 +39,8 @@ app.post("/", function(req, res) {
     if (req.body.hideClick !== undefined) {
       for (var i = 0; i < workItems.length; i++) {
         if (req.body.hideClick === workItems[i]) {
-          hiddenItems.push(workItems[i]);
+          hiddenItems.push({theList : "Work", value : workItems[i]});
+          console.log(hiddenItems);
           workItems.splice(i, 1);
           break;
         }
@@ -68,7 +69,7 @@ app.post("/", function(req, res) {
     if (req.body.hideClick !== undefined) {
       for (var i = 0; i < homeItems.length; i++) {
         if (req.body.hideClick === homeItems[i]) {
-          hiddenItems.push(homeItems[i]);
+          hiddenItems.push({theList : "Home", value : homeItems[i]});
           homeItems.splice(i, 1);
           break;
         }
@@ -96,7 +97,7 @@ app.post("/", function(req, res) {
     if (req.body.hideClick !== undefined) {
       for (var i = 0; i < items.length; i++) {
         if (req.body.hideClick === items[i]) {
-          hiddenItems.push(items[i]);
+          hiddenItems.push({theList : "Regular", value: items[i]});
           items.splice(i, 1);
           break;
         }
@@ -136,11 +137,40 @@ app.get("/home", function(req, res) {
 })
 
 app.get("/hidden", function(req, res) {
-  res.render("list", {
+  res.render("hidden", {
     listTitle: "Your Hidden List",
     newListItems: hiddenItems
   })
 })
+
+app.post("/hidden", function(req, res) {
+  for (var i = 0; i < hiddenItems.length; i++)
+  {
+    if (req.body.undoClick === hiddenItems[i].value)
+    {
+      if (hiddenItems[i].theList === "Work")
+      {
+        workItems.push(hiddenItems[i].value)
+        hiddenItems.splice(i, 1);
+      }
+      else if (hiddenItems[i].theList === "Home")
+      {
+        homeItems.push(hiddenItems[i].value)
+        hiddenItems.splice(i, 1);
+      }
+      else if (hiddenItems[i].theList === "Regular")
+      {
+        items.push(hiddenItems[i].value)
+        hiddenItems.splice(i, 1);
+      }
+      break;
+    }
+  }
+  res.redirect("/hidden");
+  console.log("UndoClick")
+})
+
+
 
 app.listen(3000, function() {
   console.log("Server on 3000")

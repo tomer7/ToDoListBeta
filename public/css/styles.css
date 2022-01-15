@@ -63,6 +63,18 @@ h1 {
   color: grey;
 }
 
+.undoIcon {
+  padding-right: 7px;
+}
+
+.colorUndoIcon {
+  color: blue;
+}
+
+.colorUndoIcon:hover {
+  color: grey;
+}
+
 .item:last-child {
   border-bottom: 0;
 }
