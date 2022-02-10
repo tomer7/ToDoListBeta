@@ -1,174 +1,288 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const date = require(__dirname + "/date.js")
-
-
+//const date = require(__dirname + "/date.js")
+const mongoose = require("mongoose");
+const _ = require("lodash");
 const app = express();
-const items = ["Buy Food", "Cook Food", "Eat Food"];
-const hiddenItems = [];
-const workItems = ["Add Your Work To Do"]
-const homeItems = ["Add Your Home To Do"]
+
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({
   extended: true
 }))
 app.use(express.static("public"));
-app.get("/", function(req, res) {
-  const day = date.getDate();
-  res.render('list', {
-    listTitle: day,
-    newListItems: items
-  });
 
+mongoose.connect("mongodb+srv://admin:Test123@cluster0.nigpj.mongodb.net/todolistDB", {
+  useNewUrlParser: true
 })
 
-app.post("/", function(req, res) {
-
-  if (req.body.list === "Work" || req.body.whichList === "Work") { // inside work list
-    if (req.body.trashClick !== undefined) {
-      for (var i = 0; i < workItems.length; i++) {
-        if (req.body.trashClick === workItems[i]) {
-          workItems.splice(i, 1);
-          break;
-        }
-      }
-      res.redirect("/work");
-      console.log("trashClick")
-    }
-    if (req.body.hideClick !== undefined) {
-      for (var i = 0; i < workItems.length; i++) {
-        if (req.body.hideClick === workItems[i]) {
-          hiddenItems.push({theList : "Work", value : workItems[i]});
-          console.log(hiddenItems);
-          workItems.splice(i, 1);
-          break;
-        }
-      }
-      res.redirect("/work");
-      console.log("hideClick")
-    }
-    if (req.body.newItem !== undefined) {
-      const item = req.body.newItem;
-
-      workItems.push(item);
-      res.redirect("/work")
-
-    }
-  } else if (req.body.list === "Home" || req.body.whichList === "Home") { // inside home list
-    if (req.body.trashClick !== undefined) {
-      for (var i = 0; i < homeItems.length; i++) {
-        if (req.body.trashClick === homeItems[i]) {
-          homeItems.splice(i, 1);
-          break;
-        }
-      }
-      res.redirect("/home");
-      console.log("trashClick")
-    }
-    if (req.body.hideClick !== undefined) {
-      for (var i = 0; i < homeItems.length; i++) {
-        if (req.body.hideClick === homeItems[i]) {
-          hiddenItems.push({theList : "Home", value : homeItems[i]});
-          homeItems.splice(i, 1);
-          break;
-        }
-      }
-      res.redirect("/home");
-      console.log("hideClick")
-    }
-    if (req.body.newItem !== undefined) {
-      const item = req.body.newItem;
-
-      homeItems.push(item);
-      res.redirect("/home")
-    }
-  } else { // inside regular list
-    if (req.body.trashClick !== undefined) {
-      for (var i = 0; i < items.length; i++) {
-        if (req.body.trashClick === items[i]) {
-          items.splice(i, 1);
-          break;
-        }
-      }
-      res.redirect("/");
-      console.log("trashClick")
-    }
-    if (req.body.hideClick !== undefined) {
-      for (var i = 0; i < items.length; i++) {
-        if (req.body.hideClick === items[i]) {
-          hiddenItems.push({theList : "Regular", value: items[i]});
-          items.splice(i, 1);
-          break;
-        }
-      }
-      res.redirect("/");
-      console.log("hideClick")
-    }
-    if (req.body.newItem !== undefined) {
-      const item = req.body.newItem;
-
-      items.push(item)
-      res.redirect("/");
-    }
-
-  } // else closer - regular list
-
-
+const itemsSchema = new mongoose.Schema({
+  name: String,
+  whichList: String
 })
 
-app.get("/work", function(req, res) {
-  res.render("list", {
-    listTitle: "Work List",
-    newListItems: workItems
-  })
+const Item = mongoose.model("Item", itemsSchema)
+
+const item1 = new Item({
+  name: "Welcome to your todolist!",
+  whichList: "Today"
+})
+const item2 = new Item({
+  name: "Drink A Lot Of Water",
+  whichList: "Today"
+})
+const item3 = new Item({
+  name: "Eat The Food",
+  whichList: "Today"
 })
 
+const defaultItems = [item1, item2, item3]
+const itemHideExampleArr = [];
 
-app.get("/about", function(req, res) {
-  res.render("about")
-})
+const listSchema = {
+  name: String,
+  items: [itemsSchema]
+}
 
-app.get("/home", function(req, res) {
-  res.render("list", {
-    listTitle: "Home List",
-    newListItems: homeItems
-  })
-})
+const List = mongoose.model("List", listSchema)
 
-app.get("/hidden", function(req, res) {
-  res.render("hidden", {
-    listTitle: "Your Hidden List",
-    newListItems: hiddenItems
-  })
-})
-
-app.post("/hidden", function(req, res) {
-  for (var i = 0; i < hiddenItems.length; i++)
-  {
-    if (req.body.undoClick === hiddenItems[i].value)
-    {
-      if (hiddenItems[i].theList === "Work")
-      {
-        workItems.push(hiddenItems[i].value)
-        hiddenItems.splice(i, 1);
-      }
-      else if (hiddenItems[i].theList === "Home")
-      {
-        homeItems.push(hiddenItems[i].value)
-        hiddenItems.splice(i, 1);
-      }
-      else if (hiddenItems[i].theList === "Regular")
-      {
-        items.push(hiddenItems[i].value)
-        hiddenItems.splice(i, 1);
-      }
-      break;
+List.findOne({
+  name: "Hidden"
+}, function(err, foundList) {
+  if (!err) {
+    if (!foundList) {
+      // Create a new hidden list
+      const list = new List({
+        name: "Hidden",
+        items: []
+      })
+      list.save()
     }
   }
-  res.redirect("/hidden");
-  console.log("UndoClick")
 })
+
+
+app.get("/", function(req, res) {
+  //const day = date.getDate();
+  Item.find({}, function(err, foundItems) {
+    if (foundItems.length === 0) {
+      Item.insertMany(defaultItems, function(err) {
+        if (!err){console.log("Successfully added default items")}
+      })
+      res.redirect("/")
+    } else {
+      res.render('list', {
+        listTitle: "Today",
+        newListItems: foundItems
+      });
+    }
+  })
+})
+
+app.get("/:customListName", function(req, res) {
+  const customListName = _.capitalize(req.params.customListName)
+  List.findOne({
+    name: customListName
+  }, function(err, foundList) {
+    if (!err) {
+      if (!foundList) {
+        // Create a new list
+        const list = new List({
+          name: customListName,
+          items: defaultItems
+        })
+        list.save()
+        res.redirect("/" + customListName)
+      } else {
+        //Show an existing list
+        res.render("list", {
+          listTitle: foundList.name,
+          newListItems: foundList.items
+        })
+      }
+    }
+  })
+})
+
+
+app.post("/", function(req, res) {
+  const itemName = req.body.newItem;
+  const listName = req.body.list;
+  const item = new Item({
+    name: itemName,
+    whichList: listName
+  })
+
+  if (listName === "Today") {
+    item.save()
+    res.redirect("/")
+  } else {
+    List.findOne({
+      name: listName
+    }, function(err, foundList) {
+      foundList.items.push(item)
+      foundList.save();
+      res.redirect("/" + listName)
+    })
+  }
+})
+
+app.post("/delete", function(req, res) {
+let checkedItemId;
+let listName;
+  if (!req.body.checkbox)
+  {
+    checkedItemId = req.body.trashClick
+    listName = req.body.whichList
+  }
+  else
+  {
+      checkedItemId = req.body.checkbox
+      listName = req.body.listName
+  }
+
+
+  if (listName === "Today") {
+    Item.findByIdAndRemove(checkedItemId, function(err) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("Successfully Delete");
+      }
+      res.redirect("/")
+    })
+  } else {
+    List.findOneAndUpdate({
+      name: listName
+    }, {
+      $pull: {
+        items: {
+          _id: checkedItemId
+        }
+      }
+    }, function(err, foundList) {
+      if (!err) {
+        res.redirect("/" + listName);
+      }
+    })
+  }
+})
+
+app.post("/hide", function(req,res) {
+
+  const listName = req.body.whichList
+  const theItemId = req.body.theItemId
+  const theItemString = req.body.theItemString
+
+  if (listName === "Today") {
+    List.findOne({
+      name: "Hidden"
+    }, function(err, foundList) {
+      const item = new Item({
+        name: theItemString,
+        whichList : listName
+      })
+      foundList.items.push(item)
+      foundList.save();
+      console.log("Moved to Hidden List");
+    })
+    Item.findByIdAndRemove(theItemId, function(err) {
+      if (!err) { console.log("Successfully Delete")}
+      res.redirect("/")
+    })
+  } else {
+    List.findOne({
+      name: "Hidden"
+    }, function(err, foundList) {
+      const item = new Item({
+        name: theItemString,
+        whichList : listName
+      })
+      foundList.items.push(item)
+      foundList.save();
+      console.log("Moved to Hidden List");
+    })
+
+    List.findOneAndUpdate({
+      name: listName
+    }, {
+      $pull: {
+        items: {
+          _id: theItemId
+        }
+      }
+    }, function(err, foundList) {
+      if (!err) {
+        console.log("Successfully Delete")
+        res.redirect("/" + listName);
+      }
+    })
+  }
+})
+
+
+
+
+app.get("/hide/showitems", function(req,res){
+  List.findOne({
+    name: "Hidden"
+  }, function(err, foundList) {
+    if (!err) {
+      if (!foundList) {
+        // Create a new list
+        const list = new List({
+          name: "Hidden",
+          items: itemHideExampleArr
+        })
+        list.save()
+        res.redirect("/hide/showitems")
+      } else {
+        //Show an existing list
+        res.render("hidden", {
+          listTitle: "Your Hidden List",
+          newListItems: foundList.items
+        })
+      }
+    }
+  })
+})
+
+
+app.post("/returnFromHide", function(req,res){
+  const listName = req.body.whichList
+  const theItemString = req.body.undoClick
+  const theItemId = req.body.theItemId
+
+  const item = new Item({
+    name: theItemString,
+    whichList: listName
+  })
+  if (listName === "Today") {
+    item.save()
+  } else {
+    List.findOne({
+      name: listName
+    }, function(err, foundList) {
+      foundList.items.push(item)
+      foundList.save();
+    })
+  }
+  List.findOneAndUpdate({
+    name: "Hidden"
+  }, {
+    $pull: {
+      items: {
+        _id: theItemId
+      }
+    }
+  }, function(err, foundList) {
+    if (!err) {
+      console.log("Successfully Delete")
+    }
+  })
+  res.redirect("/hide/showitems")
+})
+
 
 
 

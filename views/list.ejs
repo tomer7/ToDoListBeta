@@ -1,5 +1,5 @@
 <%- include("header") -%>
-  <form class="IconUpper" action="/hidden" method="get">
+  <form class="IconUpper" action="/hide/showitems" method="get">
     <button type="submit">
       <i class="fas fa-user-shield fa-3x IconUpperHover"></i>
     </button>
@@ -8,35 +8,39 @@
     <h1><%= listTitle %></h1>
   </div>
     <div class="box">
-      <% for (var i = 0; i < newListItems.length; i++) { %>
+      <% newListItems.forEach(function(item) { %>
       <div class="item fullLine">
-        <div class="item">
-          <input type="checkbox">
-          <p><%= newListItems[i] %></p>
-        </div>
+        <form action="/delete" method="post">
+          <div class="item">
+            <input type="checkbox" name="checkbox" value="<%= item._id %>" onChange="this.form.submit()">
+            <p><%= item.name %></p>
+          </div>
+          <input type="hidden" name="listName" value="<%= listTitle %>"></input>
+        </form>
         <div class="icons">
           <div class="trashIcon">
-            <form class="formTrashIcon" action="/" method="post">
+            <form class="formTrashIcon" action="/delete" method="post">
               <input type="hidden" name="whichList" value=<%= listTitle %>>
-              <button class="colorTrashIcon" type="submit" name="trashClick" value="<%= newListItems[i] %>" >
+              <button class="colorTrashIcon" type="submit" name="trashClick" value="<%= item._id %>" >
                   <i class="fas fa-trash-alt"></i>
               </button>
             </form>
           </div>
            <div class="hideIcon">
-             <form class="formHideIcon" action="/" method="post">
+             <form class="formHideIcon" action="/hide" method="post">
                <input type="hidden" name="whichList" value=<%= listTitle %>>
-               <button class="colorHideIcon" type="submit" name="hideClick" value="<%= newListItems[i] %>">
+               <input type="hidden" name="theItemId" value=<%- item._id %>>
+               <button class="colorHideIcon" type="submit" name="theItemString" value="<%= item.name %>">
                    <i class="far fa-eye-slash"></i>
                </button>
              </form>
            </div>
         </div>
       </div>
-      <% } %>
-      <form class="itemForm" action="/" method="post">
+      <% }) %>
+      <form class="item" action="/" method="post">
         <input type="text" name="newItem" placeholder="New Item" autocomplete="off">
-        <button class="plusButton" type="submit" name="list" value=<%= listTitle %>>+</button>
+        <button class="plusButton" type="submit" name="list" value="<%= listTitle %>">+</button>
       </form>
     </div>
 

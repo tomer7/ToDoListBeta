@@ -11,14 +11,14 @@
       <% for (var i = 0; i < newListItems.length; i++) { %>
       <div class="item fullLine">
         <div class="item">
-          <input type="checkbox">
-          <p><%= newListItems[i].value %></p>
+          <p><%= newListItems[i].name %></p>
         </div>
         <div class="icons">
           <div class="undoIcon">
-            <form class="formundoIcon" action="/hidden" method="post">
-              <input type="hidden" name="whichList" value=<%= listTitle %>>
-              <button class="colorUndoIcon" type="submit" name="undoClick" value="<%= newListItems[i].value %>" >
+            <form class="formundoIcon" action="/returnFromHide" method="post">
+              <input type="hidden" name="whichList" value=<%= newListItems[i].whichList %>>
+              <input type="hidden" name="theItemId" value=<%= newListItems[i]._id %>>
+              <button class="colorUndoIcon" type="submit" name="undoClick" value="<%= newListItems[i].name %>" >
                   <i class="fas fa-undo"></i>
               </button>
             </form>
